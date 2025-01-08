@@ -1,6 +1,7 @@
 import { Button } from "@/components/button/Button";
 import { LoadingSVG } from "@/components/button/LoadingSVG";
 import { SettingsDropdown } from "@/components/playground/SettingsDropdown";
+import { AssistantDropdown, Assistant } from "@/components/playground/AssistantDropdown";
 import { useConfig } from "@/hooks/useConfig";
 import { ConnectionState } from "livekit-client";
 import { ReactNode } from "react";
@@ -13,6 +14,8 @@ type PlaygroundHeader = {
   accentColor: string;
   connectionState: ConnectionState;
   onConnectClicked: () => void;
+  selectedAssistant?: Assistant;
+  onAssistantChange: (assistant: Assistant) => void;
 };
 
 export const PlaygroundHeader = ({
@@ -23,6 +26,8 @@ export const PlaygroundHeader = ({
   height,
   onConnectClicked,
   connectionState,
+  selectedAssistant,
+  onAssistantChange
 }: PlaygroundHeader) => {
   const { config } = useConfig();
   return (
@@ -41,6 +46,10 @@ export const PlaygroundHeader = ({
         </div>
       </div>
       <div className="flex basis-1/3 justify-end items-center gap-2">
+        <AssistantDropdown 
+          selectedAssistant={selectedAssistant}
+          onAssistantChange={onAssistantChange}
+        />
         {githubLink && (
           <a
             href={githubLink}

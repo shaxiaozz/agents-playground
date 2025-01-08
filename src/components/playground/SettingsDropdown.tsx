@@ -1,128 +1,86 @@
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { CheckIcon, ChevronIcon } from "./icons";
-import { useConfig } from "@/hooks/useConfig";
-
-type SettingType = "inputs" | "outputs" | "chat" | "theme_color"
-
-type SettingValue = {
-  title: string;
-  type: SettingType | "separator";
-  key: string;
-};
-
-const settingsDropdown: SettingValue[] = [
-  {
-    title: "Show chat",
-    type: "chat",
-    key: "N/A",
-  },
-  {
-    title: "---",
-    type: "separator",
-    key: "separator_1",
-  },
-  {
-    title: "Show video",
-    type: "outputs",
-    key: "video",
-  },
-  {
-    title: "Show audio",
-    type: "outputs",
-    key: "audio",
-  },
-
-  {
-    title: "---",
-    type: "separator",
-    key: "separator_2",
-  },
-  {
-    title: "Enable camera",
-    type: "inputs",
-    key: "camera",
-  },
-  {
-    title: "Enable mic",
-    type: "inputs",
-    key: "mic",
-  },
-];
+import { Menu, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
+import { useConfig } from '@/hooks/useConfig';
 
 export const SettingsDropdown = () => {
-  const {config, setUserSettings} = useConfig();
-
-  const isEnabled = (setting: SettingValue) => {
-    if (setting.type === "separator" || setting.type === "theme_color") return false;
-    if (setting.type === "chat") {
-      return config.settings[setting.type];
-    }
-
-    if(setting.type === "inputs") {
-      const key = setting.key as "camera" | "mic";
-      return config.settings.inputs[key];
-    } else if(setting.type === "outputs") {
-      const key = setting.key as "video" | "audio";
-      return config.settings.outputs[key];
-    }
-
-    return false;
-  };
-
-  const toggleSetting = (setting: SettingValue) => {
-    if (setting.type === "separator" || setting.type === "theme_color") return;
-    const newValue = !isEnabled(setting);
-    const newSettings = {...config.settings}
-
-    if(setting.type === "chat") {
-      newSettings.chat = newValue;
-    } else if(setting.type === "inputs") {
-      newSettings.inputs[setting.key as "camera" | "mic"] = newValue;
-    } else if(setting.type === "outputs") {
-      newSettings.outputs[setting.key as "video" | "audio"] = newValue;
-    }
-    setUserSettings(newSettings);
-  };
+  const { config, setUserSettings } = useConfig();
 
   return (
-    <DropdownMenu.Root modal={false}>
-      <DropdownMenu.Trigger className="group inline-flex max-h-12 items-center gap-1 rounded-md hover:bg-gray-800 bg-gray-900 border-gray-800 p-1 pr-2 text-gray-100">
-        <button className="my-auto text-sm flex gap-1 pl-2 py-1 h-full items-center">
-          Settings
-          <ChevronIcon />
-        </button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          className="z-50 flex w-60 flex-col gap-0 overflow-hidden rounded text-gray-100 border border-gray-800 bg-gray-900 py-2 text-sm"
-          sideOffset={5}
-          collisionPadding={16}
-        >
-          {settingsDropdown.map((setting) => {
-            if (setting.type === "separator") {
-              return (
+    <Menu as="div" className="relative inline-block text-left">
+      <div>
+        <Menu.Button className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-gray-900 border border-gray-800 rounded-md hover:bg-gray-800">
+          <span>Settings</span>
+          <svg 
+            className="w-4 h-4" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M19 9l-7 7-7-7" 
+            />
+          </svg>
+        </Menu.Button>
+      </div>
+      <Transition
+        as={Fragment}
+        enter="transition ease-out duration-100"
+        enterFrom="transform opacity-0 scale-95"
+        enterTo="transform opacity-100 scale-100"
+        leave="transition ease-in duration-75"
+        leaveFrom="transform opacity-100 scale-100"
+        leaveTo="transform opacity-0 scale-95"
+      >
+        <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right bg-gray-900 border border-gray-800 rounded-md shadow-lg">
+          <div className="py-1">
+            <Menu.Item>
+              {({ active }) => (
                 <div
-                  key={setting.key}
-                  className="border-t border-gray-800 my-2"
-                />
-              );
-            }
-
-            return (
-              <DropdownMenu.Label
-                key={setting.key}
-                onClick={() => toggleSetting(setting)}
-                className="flex max-w-full flex-row items-end gap-2 px-3 py-2 text-xs hover:bg-gray-800 cursor-pointer"
-              >
-                <div className="w-4 h-4 flex items-center">
-                  {isEnabled(setting) && <CheckIcon />}
+                  className={`${
+                    active ? 'bg-gray-800' : ''
+                  } flex w-full items-center px-4 py-2 text-sm text-white justify-between cursor-pointer`}
+                  onClick={() => {
+                    const newSettings = { ...config.settings };
+                    newSettings.inputs.camera = !newSettings.inputs.camera;
+                    setUserSettings(newSettings);
+                  }}
+                >
+                  <span>Camera</span>
+                  {config.settings.inputs.camera && (
+                    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
                 </div>
-                <span>{setting.title}</span>
-              </DropdownMenu.Label>
-            );
-          })}
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+              )}
+            </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <div
+                  className={`${
+                    active ? 'bg-gray-800' : ''
+                  } flex w-full items-center px-4 py-2 text-sm text-white justify-between cursor-pointer`}
+                  onClick={() => {
+                    const newSettings = { ...config.settings };
+                    newSettings.inputs.mic = !newSettings.inputs.mic;
+                    setUserSettings(newSettings);
+                  }}
+                >
+                  <span>Microphone</span>
+                  {config.settings.inputs.mic && (
+                    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </div>
+              )}
+            </Menu.Item>
+          </div>
+        </Menu.Items>
+      </Transition>
+    </Menu>
   );
 };

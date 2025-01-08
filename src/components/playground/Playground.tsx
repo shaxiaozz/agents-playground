@@ -28,6 +28,7 @@ import { ConnectionState, LocalParticipant, Track } from "livekit-client";
 import { QRCodeSVG } from "qrcode.react";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import tailwindTheme from "../../lib/tailwindTheme.preval";
+import { Assistant } from "./AssistantDropdown";
 
 export interface PlaygroundMeta {
   name: string;
@@ -51,6 +52,7 @@ export default function Playground({
   const { name } = useRoomInfo();
   const [transcripts, setTranscripts] = useState<ChatMessageType[]>([]);
   const { localParticipant } = useLocalParticipant();
+  const [selectedAssistant, setSelectedAssistant] = useState<Assistant>();
 
   const voiceAssistant = useVoiceAssistant();
 
@@ -233,6 +235,11 @@ export default function Playground({
                 name="Participant"
                 value={localParticipant.identity}
               />
+              <NameValueRow
+                name="Assistant"
+                value={selectedAssistant?.name || 'Not selected'}
+                valueColor={selectedAssistant ? `${config.settings.theme_color}-500` : 'gray-500'}
+              />
             </div>
           )}
         </ConfigurationPanelItem>
@@ -327,6 +334,7 @@ export default function Playground({
     themeColors,
     setUserSettings,
     voiceAssistant.agent,
+    selectedAssistant,
   ]);
 
   let mobileTabs: PlaygroundTab[] = [];
@@ -391,6 +399,8 @@ export default function Playground({
         onConnectClicked={() =>
           onConnect(roomState === ConnectionState.Disconnected)
         }
+        selectedAssistant={selectedAssistant}
+        onAssistantChange={setSelectedAssistant}
       />
       <div
         className={`flex gap-4 py-4 grow w-full selection:bg-${config.settings.theme_color}-900`}
