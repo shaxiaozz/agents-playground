@@ -50,7 +50,7 @@ export const PlaygroundHeader = ({
           selectedAssistant={selectedAssistant}
           onAssistantChange={onAssistantChange}
         />
-        {githubLink && (
+        {/* {githubLink && (
           <a
             href={githubLink}
             target="_blank"
@@ -58,7 +58,7 @@ export const PlaygroundHeader = ({
           >
             <GithubSVG />
           </a>
-        )}
+        )} */}
         {config.settings.editable && <SettingsDropdown />}
         <Button
           accentColor={

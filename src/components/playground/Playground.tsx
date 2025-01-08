@@ -29,6 +29,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import tailwindTheme from "../../lib/tailwindTheme.preval";
 import { Assistant } from "./AssistantDropdown";
+import { dispatchAgent } from '@/lib/api';
 
 export interface PlaygroundMeta {
   name: string;
@@ -386,6 +387,25 @@ export default function Playground({
       </PlaygroundTile>
     ),
   });
+
+  useEffect(() => {
+    const handleAgentDispatch = async () => {
+      if (
+        roomState === ConnectionState.Connected && 
+        selectedAssistant && 
+        name
+      ) {
+        try {
+          await dispatchAgent(name, selectedAssistant.id);
+        } catch (error) {
+          console.error('Failed to dispatch agent:', error);
+          // 可以使用 toast 显示错误信息
+        }
+      }
+    };
+
+    handleAgentDispatch();
+  }, [roomState, selectedAssistant, name]);
 
   return (
     <>

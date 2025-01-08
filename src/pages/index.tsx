@@ -65,6 +65,18 @@ export function HomeInner() {
     return false;
   }, [wsUrl])
 
+  const onConnect = async (connect: boolean, opts?: { token: string; url: string }) => {
+    if (connect) {
+      if (opts?.token && opts?.url) {
+        await connectWithCredentials(opts.token, opts.url);
+      } else {
+        setShowConnectDialog(true);
+      }
+    } else {
+      await disconnect();
+    }
+  };
+
   return (
     <>
       <Head>
