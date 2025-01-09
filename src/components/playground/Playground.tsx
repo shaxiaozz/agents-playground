@@ -30,6 +30,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import tailwindTheme from "../../lib/tailwindTheme.preval";
 import { Assistant } from "./AssistantDropdown";
 import { dispatchAgent } from '@/lib/api';
+import { Voice } from "./VoiceSelector";
 
 export interface PlaygroundMeta {
   name: string;
@@ -54,6 +55,7 @@ export default function Playground({
   const [transcripts, setTranscripts] = useState<ChatMessageType[]>([]);
   const { localParticipant } = useLocalParticipant();
   const [selectedAssistant, setSelectedAssistant] = useState<Assistant>();
+  const [selectedVoice, setSelectedVoice] = useState<Voice>();
 
   const voiceAssistant = useVoiceAssistant();
 
@@ -421,6 +423,8 @@ export default function Playground({
         }
         selectedAssistant={selectedAssistant}
         onAssistantChange={setSelectedAssistant}
+        selectedVoice={selectedVoice}
+        onVoiceChange={setSelectedVoice}
       />
       <div
         className={`flex gap-4 py-4 grow w-full selection:bg-${config.settings.theme_color}-900`}

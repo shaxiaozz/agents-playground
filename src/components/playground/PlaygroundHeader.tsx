@@ -5,6 +5,7 @@ import { AssistantDropdown, Assistant } from "@/components/playground/AssistantD
 import { useConfig } from "@/hooks/useConfig";
 import { ConnectionState } from "livekit-client";
 import { ReactNode } from "react";
+import { VoiceSelector, Voice } from './VoiceSelector';
 
 type PlaygroundHeader = {
   logo?: ReactNode;
@@ -16,6 +17,8 @@ type PlaygroundHeader = {
   onConnectClicked: () => void;
   selectedAssistant?: Assistant;
   onAssistantChange: (assistant: Assistant) => void;
+  selectedVoice?: Voice;
+  onVoiceChange: (voice: Voice) => void;
 };
 
 export const PlaygroundHeader = ({
@@ -27,7 +30,9 @@ export const PlaygroundHeader = ({
   onConnectClicked,
   connectionState,
   selectedAssistant,
-  onAssistantChange
+  onAssistantChange,
+  selectedVoice,
+  onVoiceChange
 }: PlaygroundHeader) => {
   const { config } = useConfig();
   return (
@@ -46,6 +51,10 @@ export const PlaygroundHeader = ({
         </div>
       </div>
       <div className="flex basis-1/3 justify-end items-center gap-2">
+        <VoiceSelector
+          selectedVoice={selectedVoice}
+          onVoiceChange={onVoiceChange}
+        />
         <AssistantDropdown 
           selectedAssistant={selectedAssistant}
           onAssistantChange={onAssistantChange}
