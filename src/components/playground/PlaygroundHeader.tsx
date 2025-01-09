@@ -4,7 +4,7 @@ import { SettingsDropdown } from "@/components/playground/SettingsDropdown";
 import { AssistantDropdown, Assistant } from "@/components/playground/AssistantDropdown";
 import { useConfig } from "@/hooks/useConfig";
 import { ConnectionState } from "livekit-client";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { VoiceSelector, Voice } from './VoiceSelector';
 
 type PlaygroundHeader = {
@@ -35,6 +35,14 @@ export const PlaygroundHeader = ({
   onVoiceChange
 }: PlaygroundHeader) => {
   const { config } = useConfig();
+  const [defaultVoiceId, setDefaultVoiceId] = useState<string>();
+
+  const handleAssistantData = (data: any) => {
+    if (data?.voice) {
+      setDefaultVoiceId(data.voice);
+    }
+  };
+
   return (
     <div
       className={`flex gap-4 pt-4 text-${accentColor}-500 justify-between items-center shrink-0`}
@@ -54,10 +62,12 @@ export const PlaygroundHeader = ({
         <VoiceSelector
           selectedVoice={selectedVoice}
           onVoiceChange={onVoiceChange}
+          defaultVoiceId={defaultVoiceId}
         />
         <AssistantDropdown 
           selectedAssistant={selectedAssistant}
           onAssistantChange={onAssistantChange}
+          onData={handleAssistantData}
         />
         {/* {githubLink && (
           <a

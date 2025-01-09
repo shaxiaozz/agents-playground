@@ -10,9 +10,10 @@ export type Voice = {
 type VoiceSelectorProps = {
   selectedVoice?: Voice;
   onVoiceChange: (voice: Voice) => void;
+  defaultVoiceId?: string;
 };
 
-export const VoiceSelector = ({ selectedVoice, onVoiceChange }: VoiceSelectorProps) => {
+export const VoiceSelector = ({ selectedVoice, onVoiceChange, defaultVoiceId }: VoiceSelectorProps) => {
   const [voices, setVoices] = useState<Voice[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
@@ -22,7 +23,7 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange }: VoiceSelectorPro
   useEffect(() => {
     const fetchVoices = async () => {
       try {
-        const response = await fetch(
+        const voicesResponse = await fetch(
           `${process.env.NEXT_PUBLIC_VOICE_ASSISTANT_MANAGER_URL}/api/voice/cartesia/list`,
           {
             headers: {
@@ -30,14 +31,25 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange }: VoiceSelectorPro
             }
           }
         );
-        if (!response.ok) {
+        
+        if (!voicesResponse.ok) {
           throw new Error('Failed to fetch voices');
         }
-        const result = await response.json();
-        if (result.code === 1000) {
-          setVoices(result.data);
+        
+        const voicesResult = await voicesResponse.json();
+        if (voicesResult.code === 1000) {
+          setVoices(voicesResult.data);
+          
+          if (voicesResult.now_voice) {
+            const defaultVoice = voicesResult.data.find(
+              (voice: Voice) => voice.id === voicesResult.now_voice
+            );
+            if (defaultVoice) {
+              onVoiceChange(defaultVoice);
+            }
+          }
         } else {
-          throw new Error(result.msg || 'Failed to fetch voices');
+          throw new Error(voicesResult.msg || 'Failed to fetch voices');
         }
       } catch (error) {
         console.error('Error fetching voices:', error);
@@ -46,7 +58,7 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange }: VoiceSelectorPro
     };
 
     fetchVoices();
-  }, []);
+  }, [onVoiceChange]);
 
   const languages = ['all', ...Array.from(new Set(voices.map(voice => voice.language)))].sort();
 
@@ -57,6 +69,8 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange }: VoiceSelectorPro
   });
 
   const CountryFlag = ({ code }: { code: string }) => {
+    if (!code) return null;
+
     const languageToCountry: { [key: string]: string } = {
       en: 'us',
       zh: 'cn',
@@ -125,6 +139,38 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange }: VoiceSelectorPro
       ro: 'Romanian'
     };
     return languageNames[code] || code.toUpperCase();
+  };
+
+  const updateVoiceId = async (voice: Voice) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_VOICE_ASSISTANT_MANAGER_URL}/api/voice-assistant/update-voice-id`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${btoa(`${process.env.NEXT_PUBLIC_BASIC_AUTH_USERNAME}:${process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD}`)}`,
+          },
+          body: JSON.stringify({ voice_id: voice.id })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to update voice');
+      }
+
+      const result = await response.json();
+      if (result.code === 1000) {
+        const updatedVoice = voices.find(v => v.id === result.now_voice);
+        if (updatedVoice) {
+          onVoiceChange(updatedVoice);
+        }
+      } else {
+        throw new Error(result.msg || 'Failed to update voice');
+      }
+    } catch (error) {
+      console.error('Error updating voice:', error);
+    }
   };
 
   return (
@@ -221,8 +267,8 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange }: VoiceSelectorPro
                   <div
                     key={voice.id}
                     className="flex items-center gap-2 p-3 hover:bg-gray-800 rounded-md cursor-pointer border-b border-gray-700"
-                    onClick={() => {
-                      onVoiceChange(voice);
+                    onClick={async () => {
+                      await updateVoiceId(voice);
                       setIsOpen(false);
                     }}
                   >
