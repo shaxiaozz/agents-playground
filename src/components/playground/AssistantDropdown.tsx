@@ -1,6 +1,7 @@
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment, useEffect, useState } from 'react';
 import React from 'react';
+import { UserIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 export type Assistant = {
   id: string;
@@ -12,9 +13,10 @@ export type Assistant = {
 type AssistantDropdownProps = {
   selectedAssistant: Assistant | undefined;
   onAssistantChange: (assistant: Assistant) => void;
+  onData?: (data: any) => void;
 };
 
-export const AssistantDropdown = ({ selectedAssistant, onAssistantChange }: AssistantDropdownProps) => {
+export const AssistantDropdown = ({ selectedAssistant, onAssistantChange, onData }: AssistantDropdownProps) => {
   const [assistants, setAssistants] = useState<Assistant[]>([]);
 
   useEffect(() => {
@@ -34,6 +36,7 @@ export const AssistantDropdown = ({ selectedAssistant, onAssistantChange }: Assi
         const result = await response.json();
         if (result.code === 1000) {
           setAssistants(result.data);
+          onData?.(result.data);
         } else {
           throw new Error(result.msg || 'Failed to fetch assistants');
         }
@@ -44,7 +47,7 @@ export const AssistantDropdown = ({ selectedAssistant, onAssistantChange }: Assi
     };
 
     fetchAssistants();
-  }, []);
+  }, [onData]);
 
   // 组件加载时设置默认选中第一个助手
   useEffect(() => {
@@ -56,21 +59,12 @@ export const AssistantDropdown = ({ selectedAssistant, onAssistantChange }: Assi
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
-        <Menu.Button className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-gray-900 border border-gray-800 rounded-md hover:bg-gray-800">
-          {selectedAssistant?.name || '选择助手'}
-          <svg 
-            className="w-4 h-4" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M19 9l-7 7-7-7" 
-            />
-          </svg>
+        <Menu.Button className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-gray-900 border border-gray-800 rounded-md hover:bg-gray-800 whitespace-nowrap overflow-hidden">
+          <UserIcon className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">
+            {selectedAssistant ? selectedAssistant.name : 'Select an assistant...'}
+          </span>
+          <ChevronDownIcon className="w-4 h-4 flex-shrink-0" />
         </Menu.Button>
       </div>
       <Transition

@@ -5,6 +5,7 @@ export type Voice = {
   name?: string;
   description: string;
   language: string;
+  gender: string;
 };
 
 type VoiceSelectorProps = {
@@ -17,6 +18,7 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange, defaultVoiceId }: 
   const [voices, setVoices] = useState<Voice[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
+  const [selectedGender, setSelectedGender] = useState('all');
   const [isOpen, setIsOpen] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
 
@@ -65,8 +67,18 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange, defaultVoiceId }: 
   const filteredVoices = voices.filter(voice => {
     const matchesSearch = voice.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesLanguage = selectedLanguage === 'all' || voice.language === selectedLanguage;
-    return matchesSearch && matchesLanguage;
+    const matchesGender = selectedGender === 'all' || voice.gender === selectedGender;
+    return matchesSearch && matchesLanguage && matchesGender;
   });
+
+  const genders = ['all', ...Array.from(new Set(voices.map(voice => voice.gender)))].sort();
+
+  const genderNames: { [key: string]: string } = {
+    'all': 'Any gender',
+    'feminine': 'Female',
+    'masculine': 'Male',
+    'gender_neutral': 'Neutral'
+  };
 
   const CountryFlag = ({ code }: { code: string }) => {
     if (!code) return null;
@@ -176,12 +188,14 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange, defaultVoiceId }: 
   return (
     <>
       <button
-        className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-gray-900 border border-gray-800 rounded-md hover:bg-gray-800"
+        className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-gray-900 border border-gray-800 rounded-md hover:bg-gray-800 whitespace-nowrap overflow-hidden"
         onClick={() => setIsOpen(true)}
       >
-        <MicrophoneIcon className="w-4 h-4" />
-        {selectedVoice ? `${getLanguageName(selectedVoice.language)} - ${selectedVoice.description.slice(0, 20)}...` : 'Select a voice...'}
-        <ChevronDownIcon className="w-4 h-4" />
+        <MicrophoneIcon className="w-4 h-4 flex-shrink-0" />
+        <span className="truncate">
+          {selectedVoice ? `${getLanguageName(selectedVoice.language)} - ${selectedVoice.description.slice(0, 20)}...` : 'Select a voice...'}
+        </span>
+        <ChevronDownIcon className="w-4 h-4 flex-shrink-0" />
       </button>
 
       {isOpen && (
@@ -256,8 +270,16 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange, defaultVoiceId }: 
                       </div>
                     )}
                   </div>
-                  <select className="flex-1 px-2 py-1.5 text-sm bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none">
-                    <option>Any gender</option>
+                  <select 
+                    className="flex-1 px-2 py-1.5 text-sm bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none"
+                    value={selectedGender}
+                    onChange={(e) => setSelectedGender(e.target.value)}
+                  >
+                    {genders.map(gender => (
+                      <option key={gender} value={gender}>
+                        {genderNames[gender] || gender}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
