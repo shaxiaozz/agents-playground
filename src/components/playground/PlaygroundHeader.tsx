@@ -6,6 +6,7 @@ import { useConfig } from "@/hooks/useConfig";
 import { ConnectionState } from "livekit-client";
 import { ReactNode, useState } from "react";
 import { VoiceSelector, Voice } from './VoiceSelector';
+import { SpeedEmotionSelector } from './SpeedEmotionSelector';
 
 type PlaygroundHeader = {
   logo?: ReactNode;
@@ -36,11 +37,27 @@ export const PlaygroundHeader = ({
 }: PlaygroundHeader) => {
   const { config } = useConfig();
   const [defaultVoiceId, setDefaultVoiceId] = useState<string>();
+  const [defaultSpeed, setDefaultSpeed] = useState<string>();
+  const [defaultEmotion, setDefaultEmotion] = useState<string>();
 
   const handleAssistantData = (data: any) => {
     if (data?.voice) {
       setDefaultVoiceId(data.voice);
     }
+  };
+
+  const handleVoiceData = (data: any) => {
+    if (data?.now_voice_speed) {
+      setDefaultSpeed(data.now_voice_speed);
+    }
+    if (data?.now_voice_emotion) {
+      setDefaultEmotion(data.now_voice_emotion);
+    }
+  };
+
+  const handleSpeedEmotionUpdate = (data: any) => {
+    setDefaultSpeed(data.now_voice_speed);
+    setDefaultEmotion(data.now_voice_emotion);
   };
 
   return (
@@ -59,10 +76,16 @@ export const PlaygroundHeader = ({
         </div>
       </div>
       <div className="flex basis-1/3 justify-end items-center gap-2">
+        <SpeedEmotionSelector 
+          defaultSpeed={defaultSpeed}
+          defaultEmotion={defaultEmotion}
+          onUpdate={handleSpeedEmotionUpdate}
+        />
         <VoiceSelector
           selectedVoice={selectedVoice}
           onVoiceChange={onVoiceChange}
           defaultVoiceId={defaultVoiceId}
+          onData={handleVoiceData}
         />
         <AssistantDropdown 
           selectedAssistant={selectedAssistant}

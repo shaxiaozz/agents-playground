@@ -12,9 +12,10 @@ type VoiceSelectorProps = {
   selectedVoice?: Voice;
   onVoiceChange: (voice: Voice) => void;
   defaultVoiceId?: string;
+  onData?: (data: any) => void;
 };
 
-export const VoiceSelector = ({ selectedVoice, onVoiceChange, defaultVoiceId }: VoiceSelectorProps) => {
+export const VoiceSelector = ({ selectedVoice, onVoiceChange, defaultVoiceId, onData }: VoiceSelectorProps) => {
   const [voices, setVoices] = useState<Voice[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
@@ -41,6 +42,9 @@ export const VoiceSelector = ({ selectedVoice, onVoiceChange, defaultVoiceId }: 
         const voicesResult = await voicesResponse.json();
         if (voicesResult.code === 1000) {
           setVoices(voicesResult.data);
+          if (onData) {
+            onData(voicesResult);
+          }
           
           if (voicesResult.now_voice) {
             const defaultVoice = voicesResult.data.find(
