@@ -6,7 +6,8 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { Inter } from "next/font/google";
 import Head from "next/head";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
+import { useRouter } from 'next/router';
 
 import { PlaygroundConnect } from "@/components/PlaygroundConnect";
 import Playground from "@/components/playground/Playground";
@@ -15,6 +16,7 @@ import { ConfigProvider, useConfig } from "@/hooks/useConfig";
 import { ConnectionMode, ConnectionProvider, useConnection } from "@/hooks/useConnection";
 import { useMemo } from "react";
 import { ToastProvider, useToast } from "@/components/toast/ToasterProvider";
+import { LoginPage } from '@/components/login/LoginPage';
 
 const themeColors = [
   "cyan",
@@ -30,6 +32,24 @@ const themeColors = [
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const loginStatus = localStorage.getItem('isLoggedIn');
+    setIsLoggedIn(loginStatus === 'true');
+    setIsLoading(false);
+  }, []);
+
+  if (isLoading) {
+    return null; // 或者显示加载动画
+  }
+
+  if (!isLoggedIn) {
+    return <LoginPage />;
+  }
+
   return (
     <ToastProvider>
       <ConfigProvider>
@@ -64,18 +84,6 @@ export function HomeInner() {
     }
     return false;
   }, [wsUrl])
-
-  const onConnect = async (connect: boolean, opts?: { token: string; url: string }) => {
-    if (connect) {
-      if (opts?.token && opts?.url) {
-        await connectWithCredentials(opts.token, opts.url);
-      } else {
-        setShowConnectDialog(true);
-      }
-    } else {
-      await disconnect();
-    }
-  };
 
   return (
     <>
